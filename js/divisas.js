@@ -31,34 +31,31 @@ function convertir(){
     let importe = parseFloat(document.getElementById("txt_importe").value);
     let res = document.getElementById("txt_resultado");
     let txtasa = document.getElementById("txt_tasa");
-    console.log(pesos_a_dolares);
-    let request = new XMLHttpRequest();
-    request.open('GET', API_URL_BASE+"latest.json?app_id="+
-        API_APP_ID+"&symbols="+API_MXN_CONCURRENCY, true);
-    request.onerror = function(){
-        alert("No se puede consultar el API en este momento…");
-    }
 
-    request.onload = function(){
-        if(request.status >= 200 && request.status < 300){
-            var data = JSON.parse(this.response);
-            console.log(data);
-            var var_rates = data.rates;
-            var tasa = parseFloat (var_rates['MXN']);
-            if(!isNaN(importe) && importe > 0.0 && !isNaN(tasa) && tasa > 0.0){
-                txtasa.value = tasa;
-                if(pesos_a_dolares){
-                    res.value = (importe/tasa);
+    var URL_CONSULTA = API_URL_BASE+"latest.json?app_id="+API_APP_ID+"&symbols="+API_MXN_CONCURRENCY;
+
+    axios.get(URL_CONSULTA)
+        .then((response) => {
+            if(response.status >= 200 && response.status < 300){
+                var data = response.data;
+                var var_rates = data.rates;
+                var tasa = parseFloat (var_rates['MXN']);
+                if(!isNaN(importe) && importe > 0.0 && !isNaN(tasa) && tasa > 0.0){
+                    txtasa.value = tasa;
+                    if(pesos_a_dolares){
+                        res.value = (importe/tasa);
+                    }
+                    else{
+                        res.value = (importe * tasa);
+                    }
                 }
-                else{
-                    res.value = (importe * tasa);
-                }
+            } else {
+                alert ("No se pueden consultar las tasas de cambio")
             }
-        } else {
+        }).catch((error) => {
+            console.log(error);
             alert ("No se pueden consultar las tasas de cambio")
-        }
-    }
+        }); 
 
-    request.send();
     return false;
 }
